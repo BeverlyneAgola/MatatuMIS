@@ -1,0 +1,124 @@
+{% extends "layout/base_public.html" %}
+
+{% block content %}
+
+<style>
+.home-container{
+    max-width:1100px;
+    margin:auto;
+    padding:40px 20px;
+}
+
+.home-header{
+    text-align:center;
+    margin-bottom:35px;
+}
+
+.home-header h1{
+    color:#2c3e50;
+}
+
+.home-intro{
+    background:#f8f9fa;
+    padding:20px;
+    border-radius:8px;
+    margin-bottom:30px;
+}
+
+.home-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:40px;
+}
+
+.home-card{
+    background:#ffffff;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 3px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.home-card:hover{
+    transform: translateY(-5px);
+}
+
+.home-card h2{
+    margin-bottom:15px;
+    color:#1e88e5;
+}
+
+.home-card p{
+    margin:10px 0;
+}
+
+.home-card a{
+    text-decoration:none;
+    color:#1e88e5;
+    font-weight:bold;
+}
+
+.home-cta{
+    text-align:center;
+    margin-top:40px;
+}
+
+.home-cta a{
+    display:inline-block;
+    margin:0 10px;
+    padding:12px 25px;
+    background:#1e88e5;
+    color:white;
+    border-radius:6px;
+    text-decoration:none;
+    font-weight:bold;
+    transition: background 0.2s;
+}
+
+.home-cta a:hover{
+    background:#1565c0;
+}
+</style>
+
+<div class="home-container">
+
+    <div class="home-header">
+        <h1>Welcome to MatatuHub</h1>
+        <p>Your trusted platform for safe and efficient transport services.</p>
+    </div>
+
+    <div class="home-intro">
+        <p>
+        At <strong>MatatuHub</strong>, we connect passengers with reliable transport operators.
+        Explore our routes, check fares, and stay informed about transport updates.
+        Your comfort and safety are our priority.
+        </p>
+    </div>
+
+    <div class="home-grid">
+        <div class="home-card">
+            <h2>Our Routes and Fare Charges </h2>
+            <p>We provide access to a wide range of matatu routes, fare info, and real-time updates.</p>
+            <a href="{{ url_for('main_bp.routes_fares') }}">View Routes & Fares →</a>
+        </div>
+
+        <div class="home-card">
+            <h2>Contact Us</h2>
+            <p>Have questions or concerns? Reach out via phone or email. We’re here to help.</p>
+            <a href="{{ url_for('main_bp.contact_us') }}">Contact →</a>
+        </div>
+
+        <div class="home-card">
+            <h2>About US</h2>
+            <p>Learn more about our company, mission, and values.</p>
+            <a href="{{ url_for('main_bp.about_us') }}">Read More →</a>
+        </div>
+
+
+    <div class="home-cta">
+        <a href="{{ url_for('auth_bp.login') }}">Sign In</a>
+    </div>
+
+</div>
+
+{% endblock %}#

@@ -1,0 +1,177 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<h2 class="mb-4">Payroll Management</h2>
+
+<div class="card shadow-sm p-3 mb-4">
+
+    <div class="d-flex justify-content-between mb-3">
+    <h5>Payroll Records</h5>
+
+    <button class="btn btn-success" onclick="exportPayroll()">
+        Export to Excel
+    </button>
+</div>
+    <div class="row mb-3">
+
+    <div class="col-md-4">
+        <label>Position</label>
+        <select id="positionFilter" class="form-control">
+            <option value="">All</option>
+            <option value="driver">Driver</option>
+            <option value="conductor">Conductor</option>
+            <option value="manager">Manager</option>
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label>Month</label>
+        <input type="month" id="monthFilter" class="form-control">
+    </div>
+
+    <div class="col-md-4 d-flex align-items-end">
+        <button onclick="loadPayroll()" class="btn btn-primary">
+            Filter
+        </button>
+    </div>
+
+</div>
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Staff Name</th>
+                <th>Position</th>
+                <th>Basic Salary</th>
+                <th>Allowances</th>
+                <th>Deductions</th>
+                <th>Tax</th>
+                <th>Net Salary</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+
+        <tbody id="payrollTable">
+            <tr>
+                <td colspan="9" class="text-center">Loading payroll records...</td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+
+<script>
+
+    console.log("SCRIPT LOADED");
+
+
+async function loadPayroll(){
+
+    console.log("FUNCTION CALLED");
+
+    const position = document.getElementById("positionFilter").value;
+    const month = document.getElementById("monthFilter").value;
+
+    const params = new URLSearchParams();
+
+    if(position){
+        params.append("position", position);
+    }
+
+    if(month){
+        params.append("month", month);
+    }
+
+    const url = "/payroll/api/payroll?" + params.toString();
+
+    try{
+
+        const response = await fetch(url);
+        console.log("FETCH STATUS:", response.status);
+
+        const data = await response.json();
+        console.log("API DATA:", data);
+
+        const table = document.getElementById("payrollTable");
+        table.innerHTML = "";
+
+        if(!data || data.length === 0){
+            table.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center">No payroll records found</td>
+                </tr>
+            `;
+            return;
+        }
+
+        data.forEach(record => {
+
+            table.innerHTML += `
+                <tr>
+                    <td>${record._id}</td>
+                    <td>${record.employee_name || "-"}</td>
+                    <td>${record.position || "-"}</td>
+                    <td>${record.basic_salary || "-"}</td>
+                    <td>${record.allowances || "-"}</td>
+                    <td>${record.deductions || "-"}</td>
+                    <td>${record.tax_amount || "-"}</td>
+                    <td>${record.net_salary || "-"}</td>
+                    <td>${record.calculation_date || "-"}</td>
+                </tr>
+            `;
+
+        });
+
+    }
+    catch(error){
+        console.error("ERROR IN LOAD:", error);
+    }
+}
+
+
+
+async function exportPayroll() {
+
+    const position = document.getElementById("positionFilter").value;
+    const month = document.getElementById("monthFilter").value;
+
+    const params = new URLSearchParams();
+
+    if (position) {
+        params.append("position", position);
+    }
+
+    if (month) {
+        params.append("month", month);
+    }
+
+    const url = "/payroll/export?" + params.toString();
+
+    try {
+
+        const response = await fetch(url);
+
+        const blob = await response.blob();
+
+        const downloadUrl = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = "payroll_report.xlsx";
+        document.body.appendChild(a);
+        a.click();
+
+        a.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+
+    } catch (error) {
+        console.error("Export failed:", error);
+    }
+}
+loadPayroll();
+
+</script>
+
+{% endblock %}

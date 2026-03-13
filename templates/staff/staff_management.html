@@ -1,0 +1,23 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h3 class="text-primary">Staff Management</h3>
+
+<div class="mt-4">
+
+    <a href="{{ url_for('staff_bp.register_staff') }}" class="btn btn-success me-3">
+        Register Staff
+    </a>
+
+    <a href="{{ url_for('staff_bp.view_staff') }}" class="btn btn-primary">
+        View Staff
+    </a>
+
+</div>
+
+</div>
+
+{% endblock %}

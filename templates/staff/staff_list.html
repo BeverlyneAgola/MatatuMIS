@@ -1,0 +1,76 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h3 class="text-primary">Staff Management</h3>
+
+    <table class="table table-bordered mt-3">
+        <thead class="table-dark">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Post</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody id="staffTable"></tbody>
+    </table>
+</div>
+
+<script>
+async function loadStaff() {
+    try {
+        const response = await fetch("/api/staff");
+        const data = await response.json();
+
+        const table = document.getElementById("staffTable");
+        table.innerHTML = "";
+
+        if (!data.staff || data.staff.length === 0) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center">
+                        No staff found
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        data.staff.forEach(member => {
+            table.innerHTML += `
+                <tr>
+                    <td>${member.name ?? "-"}</td>
+                    <td>${member.email ?? "-"}</td>
+                    <td>${member.post ?? "-"}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm"
+                            onclick="deleteStaff('${member.name}')">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+    } catch (error) {
+        console.error("Error loading staff:", error);
+    }
+}
+
+async function deleteStaff(name) {
+    if (!confirm("Are you sure you want to delete this staff?")) return;
+
+    await fetch(`/api/staff/${name}`, {
+        method: "DELETE"
+    });
+
+    loadStaff();
+}
+
+window.onload = loadStaff;
+</script>
+
+{% endblock %}

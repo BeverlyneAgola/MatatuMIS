@@ -1,0 +1,19 @@
+from flask import Blueprint, render_template, session, redirect, url_for
+
+main_bp = Blueprint("main_bp", __name__)
+
+@main_bp.route("/")
+def home():
+    return render_template("main/home.html")
+
+@main_bp.route("/about")
+def about():
+    return render_template("main/about.html")
+
+@main_bp.route("/motto")
+def motto():
+    return render_template("main/motto.html")
+
+@main_bp.route("/partnerships")
+def partnerships():
+    return render_template("main/partnerships.html")

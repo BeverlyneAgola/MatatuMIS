@@ -1,0 +1,226 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<style>
+/* Modern card styling */
+.dashboard-card{
+border:none;
+border-radius:12px;
+transition:0.3s;
+padding:1rem;
+text-align:center;
+}
+
+.dashboard-card:hover{
+transform:translateY(-5px);
+box-shadow:0 10px 25px rgba(0,0,0,0.1);
+}
+
+.stat-number{
+font-size:32px;
+font-weight:bold;
+}
+</style>
+
+<div class="container-fluid">
+
+<h2 class="mb-4">MatatuMIS Dashboard</h2>
+
+<!-- STATISTICS CARDS -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card dashboard-card shadow bg-primary text-white">
+            <h6>Total Staff</h6>
+            <div class="stat-number" id="staffCount">0</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card shadow bg-success text-white">
+            <h6>Total Vehicles</h6>
+            <div class="stat-number" id="vehicleCount">0</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card shadow bg-warning text-white">
+            <h6>Payroll Employees</h6>
+            <div class="stat-number" id="payrollCount">0</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card shadow bg-dark text-white">
+            <h6>Income Records</h6>
+            <div class="stat-number" id="incomeCount">0</div>
+        </div>
+    </div>
+</div>
+
+<!-- CHARTS -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card dashboard-card shadow p-4">
+            <h5 class="mb-3">Staff vs Payroll</h5>
+            <canvas id="staffPayrollChart"></canvas>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card dashboard-card shadow p-4">
+            <h5 class="mb-3">Vehicle Income per Route</h5>
+            <canvas id="routeIncomeChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- MONTHLY INCOME TREND -->
+<div class="row g-4 mb-4">
+    <div class="col-md-12">
+        <div class="card dashboard-card shadow p-4">
+            <h5 class="mb-3">Monthly Income Trend</h5>
+            <canvas id="monthlyIncomeChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- RECENT PAYMENTS TABLE -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card dashboard-card shadow p-4">
+            <h5 class="mb-3">Recent MPESA Payments</h5>
+            <table class="table table-striped" id="paymentsTable">
+                <thead>
+                    <tr>
+                        <th>Receipt</th>
+                        <th>Amount</th>
+                        <th>Phone Number</th>
+                        <th>Route</th>
+                        <th>Vehicle</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Filled via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+
+// Animated counter
+function animateValue(id,end){
+    let start = 0;
+    let duration = 800;
+    let step = Math.ceil(end/(duration/16));
+    let obj = document.getElementById(id);
+    let timer = setInterval(()=>{
+        start += step;
+        if(start >= end){ start=end; clearInterval(timer); }
+        obj.innerText = start;
+    },16);
+}
+
+// Load dashboard stats
+async function loadDashboardStats(){
+    try{
+        const response = await fetch("/dashboard/api/dashboard-stats");
+        const data = await response.json();
+
+        animateValue("staffCount",data.staff_count);
+        animateValue("vehicleCount",data.vehicle_count);
+        animateValue("payrollCount",data.payroll_count);
+        animateValue("incomeCount",data.income_count);
+
+        createStaffPayrollChart(data);
+        createSystemCharts(data);
+
+    }catch(e){console.error(e);}
+}
+
+// Staff vs Payroll chart
+function createStaffPayrollChart(data){
+    new Chart(document.getElementById("staffPayrollChart"),{
+        type:"bar",
+        data:{
+            labels:["Staff","Payroll"],
+            datasets:[{
+                label:"Employees",
+                data:[data.staff_count,data.payroll_count],
+                backgroundColor:["#0d6efd","#ffc107"]
+            }]
+        }
+    });
+}
+
+// Vehicle income per route
+async function createSystemCharts(data){
+    try{
+        const response = await fetch("/dashboard/api/route-income");
+        const routeData = await response.json();
+
+        const routes = routeData.map(r=>r.route);
+        const income = routeData.map(r=>r.total);
+
+        new Chart(document.getElementById("routeIncomeChart"),{
+            type:"bar",
+            data:{
+                labels:routes,
+                datasets:[{
+                    label:"Income (KES)",
+                    data:income,
+                    backgroundColor:"#198754"
+                }]
+            }
+        });
+
+        // Optional: Monthly Income Trend Chart
+        const response2 = await fetch("/dashboard/api/monthly-income");
+        const monthlyData = await response2.json();
+        const months = monthlyData.map(m=>m.month);
+        const totals = monthlyData.map(m=>m.total);
+
+        new Chart(document.getElementById("monthlyIncomeChart"),{
+            type:"line",
+            data:{
+                labels:months,
+                datasets:[{
+                    label:"Income KES",
+                    data:totals,
+                    borderColor:"#0d6efd",
+                    backgroundColor:"rgba(13,110,253,0.1)",
+                    fill:true,
+                    tension:0.3
+                }]
+            }
+        });
+
+        // Recent Payments Table
+        const response3 = await fetch("/dashboard/api/recent-payments");
+        const payments = await response3.json();
+        const tbody = document.querySelector("#paymentsTable tbody");
+        tbody.innerHTML = "";
+        payments.forEach(p=>{
+            tbody.innerHTML += `
+                <tr>
+                    <td>${p.receipt}</td>
+                    <td>${p.amount}</td>
+                    <td>${p.phone}</td>
+                    <td>${p.route}</td>
+                    <td>${p.vehicle}</td>
+                    <td>${p.date}</td>
+                </tr>
+            `;
+        });
+
+    }catch(e){console.error(e);}
+}
+
+loadDashboardStats();
+
+</script>
+
+{% endblock %}

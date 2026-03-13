@@ -1,0 +1,172 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2 class="mb-3">M-Pesa STK Payment</h2>
+    <p>Enter phone number, amount, route, and vehicle to initiate payment.</p>
+
+    <!-- STK FORM -->
+    <form id="stkForm">
+
+        <div class="mb-3">
+            <label class="form-label">Phone Number</label>
+            <input 
+                type="text" 
+                id="phone" 
+                class="form-control"
+                placeholder="07XXXXXXXX"
+                required
+            >
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Amount (KES)</label>
+            <input 
+                type="number" 
+                id="amount" 
+                class="form-control"
+                placeholder="Enter amount"
+                min="1"
+                required
+            >
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Route</label>
+            <select id="route" class="form-select" required>
+                <option value="">Select Route</option>
+                 <option value="Rongai"> Rongai</option>
+                <option value="Thika">Thika</option>
+                <option value="Ngong">Ngong</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Vehicle</label>
+            <select id="vehicle" class="form-select" required>
+                <option value="">Select Vehicle</option>                
+                <option value="KDH 499#">KDH 499#</option>
+                <option value="KCQ 411#">KCQ 411#</option>
+                <option value="KDP 822#">KDP 822#</option>
+                <option value="KDP 911#">KDP 911#</option>
+                <option value="KCL 470#">KCL 470#</option>
+                <option value="KBZ 456#">KBZ 456#</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Pay with M-Pesa
+        </button>
+
+    </form>
+
+    <!-- RESPONSE BOX -->
+    <div class="mt-4">
+        <h5>Response</h5>
+        <pre id="responseBox" class="bg-light p-3 rounded"></pre>
+    </div>
+
+</div>
+
+<hr>
+
+<!-- TRANSACTIONS TABLE -->
+<div class="container mt-4">
+
+    <h3>Successful Transactions</h3>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Checkout / Merchant ID</th>
+                    <th>Phone Number</th>
+                    <th>Amount (KES)</th>
+                    <th>Route</th>
+                    <th>Vehicle</th>
+                    <th>Transaction Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for p in payments %}
+                <tr>
+                    <td>{{ p.TransactionID or "Pending" }}</td>
+                    <td>{{ p.CheckoutRequestID or p.MerchantRequestID or "-" }}</td>
+                    <td>{{ p.PhoneNumber or "-" }}</td>
+                    <td>{{ p.Amount or "-" }}</td>
+                    <td>{{ p.Route or "-" }}</td>
+                    <td>{{ p.Vehicle or "-" }}</td>
+                    <td>{{ p.TransactionDate or "-" }}</td>
+                    <td>{{ p.ResultDesc or "Success" }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center">
+                        No transactions found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+<!-- JAVASCRIPT -->
+<script>
+
+document.getElementById("stkForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+
+    let phone = document.getElementById("phone").value;
+    const amount = document.getElementById("amount").value;
+    const route = document.getElementById("route").value;
+    const vehicle = document.getElementById("vehicle").value;
+    const responseBox = document.getElementById("responseBox");
+
+    if (!route || !vehicle) {
+        responseBox.innerText = "Please select a route and vehicle.";
+        return;
+    }
+
+    if (phone.startsWith("0")) {
+        phone = "254" + phone.slice(1);
+    } else if (phone.startsWith("+254")) {
+        phone = phone.slice(1);
+    }
+
+    responseBox.innerText = "Processing payment...";
+
+    try {
+        const res = await fetch("/api/stkpush", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                phone_number: phone,
+                amount: amount,
+                route: route,       // send route
+                vehicle: vehicle    // send vehicle
+            })
+        });
+
+        const data = await res.json();
+        responseBox.innerText = JSON.stringify(data, null, 2);
+
+    } catch(error){
+        responseBox.innerText = "Error initiating payment.";
+        console.error(error);
+    }
+
+});
+
+</script>
+
+{% endblock %}

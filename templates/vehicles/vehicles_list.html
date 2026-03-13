@@ -1,0 +1,238 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<h2 class="mb-4">Vehicle Management</h2>
+
+<div class="card shadow-sm p-3 mb-4">
+    <div class="d-flex justify-content-between mb-3">
+        <h5>Registered Vehicles</h5>
+        <button type="button" class="btn btn-primary" onclick="openVehicleModal()">
+            + Add Vehicle
+        </button>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Vehicle Number</th>
+                <th>Year of Registration</th>
+                <th>Insurance Status</th>
+                <th>Maintenance Status</th>
+                <th>Model</th>
+                <th>Vehicle Type</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="vehiclesTable">
+            <tr>
+                <td colspan="8" class="text-center">Loading...</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<hr>
+
+<!-- Update Route Section -->
+<div class="card shadow-sm p-3 mb-4">
+    <h5>Update Vehicle Route</h5>
+    <form id="updateRouteForm" class="row g-3 align-items-center">
+        <div class="col-auto">
+            <input type="text" id="update_vehicle_number" class="form-control" placeholder="Vehicle Number" required>
+        </div>
+        <div class="col-auto">
+            <input type="text" id="new_route" class="form-control" placeholder="New Route" required>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-success">Update Route</button>
+        </div>
+    </form>
+</div>
+
+<!-- Vehicle Modal -->
+<div id="vehicleModal" class="modal fade" tabindex="-1" style="display:none;">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Vehicle</h5>
+        <button type="button" class="btn-close" onclick="closeVehicleModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form id="vehicleForm" class="row g-3">
+          <div class="col-12">
+            <input type="text" id="vehicle_number" class="form-control" placeholder="Vehicle Number" required>
+          </div>
+          <div class="col-6">
+            <input type="text" id="vehicle_type" class="form-control" placeholder="Vehicle Type" required>
+          </div>
+          <div class="col-6">
+            <input type="text" id="model" class="form-control" placeholder="Model">
+          </div>
+          <div class="col-6">
+            <input type="text" id="year" class="form-control" placeholder="Year">
+          </div>
+          <div class="col-6">
+            <input type="text" id="insurance_status" class="form-control" placeholder="Insurance Status">
+          </div>
+          <div class="col-6">
+            <input type="text" id="maintenance_status" class="form-control" placeholder="Maintenance Status">
+          </div>
+          <div class="col-12 d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary me-2">Save</button>
+            <button type="button" class="btn btn-secondary" onclick="closeVehicleModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    // Open modal
+    function openVehicleModal() {
+        const modal = document.getElementById("vehicleModal");
+        modal.style.display = "block";
+        modal.classList.add("show");
+    }
+
+    // Close modal
+    function closeVehicleModal() {
+        const modal = document.getElementById("vehicleModal");
+        modal.style.display = "none";
+        modal.classList.remove("show");
+    }
+
+    // Load vehicles
+    async function loadVehicles() {
+        console.log("Fetching vehicles...");
+
+        try {
+            const response = await fetch("/api/vehicles");
+            const data = await response.json();
+
+            console.log("API Response:", data);
+
+            const table = document.getElementById("vehiclesTable");
+            table.innerHTML = "";
+
+            if (!data.vehicles || data.vehicles.length === 0) {
+                table.innerHTML = "<tr><td colspan='8' class='text-center'>No vehicles found</td></tr>";
+                return;
+            }
+
+            data.vehicles.forEach(vehicle => {
+                table.innerHTML += `
+                    <tr>
+                        <td>${vehicle._id}</td>
+                        <td>${vehicle.vehicle_number}</td>
+                        <td>${vehicle.year || "-"}</td>
+                        <td>${vehicle.insurance_status || "-"}</td>
+                        <td>${vehicle.maintenance_status || "-"}</td>
+                        <td>${vehicle.model || "-"}</td>
+                        <td>${vehicle.vehicle_type || "-"}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning me-1"
+                                onclick="updateRoute('${vehicle.vehicle_number}')">
+                                Update Route
+                            </button>
+                            <button class="btn btn-sm btn-danger"
+                                onclick="deleteVehicle('${vehicle.vehicle_number}')">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (error) {
+            console.error("Error loading vehicles:", error);
+        }
+    }
+
+    // Update route
+    async function updateRoute(vehicle_number) {
+        const new_route = prompt("Enter new route:");
+        if (!new_route) return;
+
+        try {
+            const response = await fetch("/api/vehicles/update-route", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    vehicle_number: vehicle_number,
+                    new_route: new_route
+                })
+            });
+
+            const data = await response.json();
+            alert(data.message || data.error);
+
+            loadVehicles();
+        } catch (error) {
+            console.error("Error updating route:", error);
+        }
+    }
+
+
+    document.getElementById("vehicleForm")?.addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const vehicle_data = {
+            vehicle_number: document.getElementById("vehicle_number").value,
+            vehicle_type: document.getElementById("vehicle_type").value,
+            model: document.getElementById("model").value,
+            year: document.getElementById("year").value,
+            insurance_status: document.getElementById("insurance_status").value,
+            maintenance_status: document.getElementById("maintenance_status").value
+        };
+
+        try {
+            const response = await fetch("/api/vehicles", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(vehicle_data)
+            });
+
+            const data = await response.json();
+            alert(data.message || data.error);
+
+            if (response.ok) {
+                closeVehicleModal();
+                loadVehicles();
+                document.getElementById("vehicleForm").reset();
+            }
+
+        } catch (error) {
+            console.error("Error adding vehicle:", error);
+        }
+    });
+
+    // Update Route form submission
+    document.getElementById("updateRouteForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const vehicle_number = document.getElementById("update_vehicle_number").value;
+        const new_route = document.getElementById("new_route").value;
+
+        try {
+            const response = await fetch("/api/vehicles/update-route", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ vehicle_number, new_route })
+            });
+
+            const data = await response.json();
+            alert(data.message || data.error);
+
+            loadVehicles();
+        } catch (error) {
+            console.error("Error updating route:", error);
+        }
+    });
+
+    // Initial load
+    loadVehicles();
+</script>
+
+{% endblock %}
