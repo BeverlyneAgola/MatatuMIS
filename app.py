@@ -1,6 +1,7 @@
 from flask import Flask
 from pyngrok import ngrok
 
+from config import SECRET_KEY
 from routes.auth_routes import auth_bp
 from routes.vehicle_routes import vehicle_bp
 from routes.staff_routes import staff_bp
@@ -16,7 +17,7 @@ from flask import render_template
 
 app = Flask(__name__)
 
-app.secret_key = "Sitakihizikazi123"
+app.secret_key = SECRET_KEY
 
 
 app.register_blueprint(main_bp)
