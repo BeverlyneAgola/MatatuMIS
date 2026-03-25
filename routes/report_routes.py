@@ -58,7 +58,7 @@ def get_reports_api():
 def submit_report():
 
     if reporting_analytics_system is None:
-        return redirect(url_for("main.contact", submitted="false"))
+        return redirect(url_for("main_bp.contact_us", submitted="false"))
 
     report_data = {
         "name": request.form.get("name"),
@@ -72,7 +72,6 @@ def submit_report():
     response, status_code = reporting_analytics_system.generate_report(report_data)
 
     if status_code == 201:
-        # Redirect with a query parameter
-        return redirect(url_for("main.contact", submitted="true"))
+        return redirect(url_for("main_bp.contact_us", submitted="true"))
     else:
-        return redirect(url_for("main.contact", submitted="false"))
+        return redirect(url_for("main_bp.contact_us", submitted="false"))

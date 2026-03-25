@@ -1,0 +1,88 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>✏️ Update Schedule</h2>
+
+    <form id="scheduleForm">
+
+        <!-- ROUTE DROPDOWN -->
+        <select id="route" required>
+            <option value="">Select Route</option>
+            {% for r in routes %}
+                <option value="{{ r }}">{{ r }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <!-- VEHICLE DROPDOWN -->
+        <select id="vehicle" required>
+            <option value="">Select Vehicle</option>
+        </select>
+        <br><br>
+
+        <input type="text" id="time" placeholder="Enter Schedule Time" required><br><br>
+
+        <button type="submit">Update Schedule</button>
+    </form>
+
+    <p id="message" style="font-weight:bold;"></p>
+
+    <br>
+    <a href="{{ url_for('routes_schedules.schedule_management') }}">⬅ Back</a>
+</div>
+
+<script>
+// vehicles from backend
+const vehicles = {{ vehicles|tojson }};
+
+// Populate vehicle dropdown based on selected route
+document.getElementById("route").addEventListener("change", function() {
+    const selectedRoute = this.value.trim();  // remove whitespace
+    const vehicleDropdown = document.getElementById("vehicle");
+
+    vehicleDropdown.innerHTML = '<option value="">Select Vehicle</option>';
+
+    vehicles.forEach(v => {
+        if ((v.assigned_route || "").toUpperCase() === selectedRoute.toUpperCase()) {
+            const option = document.createElement("option");
+            option.value = v.vehicle_number;  // field from DB
+            option.textContent = v.vehicle_number;
+            vehicleDropdown.appendChild(option);
+        }
+    });
+});
+
+// Submit form
+const updateUrl = "{{ url_for('routes_schedules.update_schedule') }}";
+
+document.getElementById("scheduleForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const route = document.getElementById("route").value;
+    const vehicle = document.getElementById("vehicle").value;  
+    const schedule_time = document.getElementById("time").value;
+
+    fetch(updateUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            route: route,
+            vehicle: vehicle,
+            schedule_time: schedule_time
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const msg = document.getElementById("message");
+        msg.innerText = data.message || data.error;
+        msg.style.color = data.error ? "red" : "green";
+    })
+    .catch(() => {
+        document.getElementById("message").innerText = "Error updating schedule";
+    });
+});
+</script>
+{% endblock %}

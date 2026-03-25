@@ -60,6 +60,7 @@
         <button type="button" class="btn-close" onclick="closeVehicleModal()"></button>
       </div>
       <div class="modal-body">
+        <p id="vehicleMessage" style="font-weight:bold; margin-bottom:10px;"></p>
         <form id="vehicleForm" class="row g-3">
           <div class="col-12">
             <input type="text" id="vehicle_number" class="form-control" placeholder="Vehicle Number" required>
@@ -90,149 +91,156 @@
 </div>
 
 <script>
-    // Open modal
-    function openVehicleModal() {
-        const modal = document.getElementById("vehicleModal");
-        modal.style.display = "block";
-        modal.classList.add("show");
-    }
+const msgElem = document.getElementById("vehicleMessage");
 
-    // Close modal
-    function closeVehicleModal() {
-        const modal = document.getElementById("vehicleModal");
-        modal.style.display = "none";
-        modal.classList.remove("show");
-    }
+// Modal functions
+function openVehicleModal() {
+    const modal = document.getElementById("vehicleModal");
+    modal.style.display = "block";
+    modal.classList.add("show");
+}
+function closeVehicleModal() {
+    const modal = document.getElementById("vehicleModal");
+    modal.style.display = "none";
+    modal.classList.remove("show");
+    msgElem.innerText = "";  // clear message when closing
+}
 
-    // Load vehicles
-    async function loadVehicles() {
-        console.log("Fetching vehicles...");
+// Load vehicles table
+async function loadVehicles() {
+    try {
+        const res = await fetch("/api/vehicles");
+        const data = await res.json();
+        const table = document.getElementById("vehiclesTable");
+        table.innerHTML = "";
 
-        try {
-            const response = await fetch("/api/vehicles");
-            const data = await response.json();
-
-            console.log("API Response:", data);
-
-            const table = document.getElementById("vehiclesTable");
-            table.innerHTML = "";
-
-            if (!data.vehicles || data.vehicles.length === 0) {
-                table.innerHTML = "<tr><td colspan='8' class='text-center'>No vehicles found</td></tr>";
-                return;
-            }
-
-            data.vehicles.forEach(vehicle => {
-                table.innerHTML += `
-                    <tr>
-                        <td>${vehicle._id}</td>
-                        <td>${vehicle.vehicle_number}</td>
-                        <td>${vehicle.year || "-"}</td>
-                        <td>${vehicle.insurance_status || "-"}</td>
-                        <td>${vehicle.maintenance_status || "-"}</td>
-                        <td>${vehicle.model || "-"}</td>
-                        <td>${vehicle.vehicle_type || "-"}</td>
-                        <td>
-                            <button class="btn btn-sm btn-warning me-1"
-                                onclick="updateRoute('${vehicle.vehicle_number}')">
-                                Update Route
-                            </button>
-                            <button class="btn btn-sm btn-danger"
-                                onclick="deleteVehicle('${vehicle.vehicle_number}')">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-        } catch (error) {
-            console.error("Error loading vehicles:", error);
+        if (!data.vehicles || data.vehicles.length === 0) {
+            table.innerHTML = "<tr><td colspan='8' class='text-center'>No vehicles found</td></tr>";
+            return;
         }
+
+        data.vehicles.forEach(vehicle => {
+            table.innerHTML += `
+                <tr>
+                    <td>${vehicle._id}</td>
+                    <td>${vehicle.vehicle_number}</td>
+                    <td>${vehicle.year || "-"}</td>
+                    <td>${vehicle.insurance_status || "-"}</td>
+                    <td>${vehicle.maintenance_status || "-"}</td>
+                    <td>${vehicle.model || "-"}</td>
+                    <td>${vehicle.vehicle_type || "-"}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-1" onclick="updateRoute('${vehicle.vehicle_number}')">Update Route</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteVehicle('${vehicle.vehicle_number}')">Delete</button>
+                    </td>
+                </tr>
+            `;
+        });
+    } catch (error) {
+        console.error("Error loading vehicles:", error);
     }
+}
 
-    // Update route
-    async function updateRoute(vehicle_number) {
-        const new_route = prompt("Enter new route:");
-        if (!new_route) return;
-
-        try {
-            const response = await fetch("/api/vehicles/update-route", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    vehicle_number: vehicle_number,
-                    new_route: new_route
-                })
-            });
-
-            const data = await response.json();
-            alert(data.message || data.error);
-
-            loadVehicles();
-        } catch (error) {
-            console.error("Error updating route:", error);
-        }
+// Delete vehicle
+async function deleteVehicle(vehicle_number) {
+    if (!confirm(`Are you sure you want to delete vehicle ${vehicle_number}?`)) return;
+    try {
+        const res = await fetch(`/api/vehicles/${vehicle_number}`, { method: "DELETE" });
+        const data = await res.json();
+        alert(data.message || data.error);
+        loadVehicles();
+    } catch (error) {
+        console.error(error);
+        alert("Failed to delete vehicle.");
     }
+}
 
+// Update route
+async function updateRoute(vehicle_number) {
+    const new_route = prompt("Enter new route:");
+    if (!new_route) return;
+    try {
+        const res = await fetch("/api/vehicles/update-route", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ vehicle_number, new_route })
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+        loadVehicles();
+    } catch (error) {
+        console.error(error);
+    }
+}
 
-    document.getElementById("vehicleForm")?.addEventListener("submit", async function(e) {
-        e.preventDefault();
+// Add vehicle
+document.getElementById("vehicleForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const vehicle_data = {
+        vehicle_number: document.getElementById("vehicle_number").value,
+        vehicle_type: document.getElementById("vehicle_type").value,
+        model: document.getElementById("model").value,
+        year: document.getElementById("year").value,
+        insurance_status: document.getElementById("insurance_status").value,
+        maintenance_status: document.getElementById("maintenance_status").value
+    };
 
-        const vehicle_data = {
-            vehicle_number: document.getElementById("vehicle_number").value,
-            vehicle_type: document.getElementById("vehicle_type").value,
-            model: document.getElementById("model").value,
-            year: document.getElementById("year").value,
-            insurance_status: document.getElementById("insurance_status").value,
-            maintenance_status: document.getElementById("maintenance_status").value
-        };
+    msgElem.innerText = "Adding vehicle...";
+    msgElem.style.color = "blue";
 
-        try {
-            const response = await fetch("/api/vehicles", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(vehicle_data)
-            });
+    try {
+        const res = await fetch("/api/vehicles", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(vehicle_data)
+        });
+        const data = await res.json();
 
-            const data = await response.json();
-            alert(data.message || data.error);
-
-            if (response.ok) {
-                closeVehicleModal();
-                loadVehicles();
-                document.getElementById("vehicleForm").reset();
-            }
-
-        } catch (error) {
-            console.error("Error adding vehicle:", error);
+        if (!res.ok) {
+            msgElem.innerText = data.error || "Failed to add vehicle";
+            msgElem.style.color = "red";
+            return;
         }
-    });
 
-    // Update Route form submission
-    document.getElementById("updateRouteForm").addEventListener("submit", async function(e) {
-        e.preventDefault();
+        msgElem.innerText = data.message;
+        msgElem.style.color = "green";
 
-        const vehicle_number = document.getElementById("update_vehicle_number").value;
-        const new_route = document.getElementById("new_route").value;
+        loadVehicles();
+        document.getElementById("vehicleForm").reset();
 
-        try {
-            const response = await fetch("/api/vehicles/update-route", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ vehicle_number, new_route })
-            });
+        setTimeout(() => {
+            msgElem.innerText = "";
+            closeVehicleModal();
+        }, 3000);
 
-            const data = await response.json();
-            alert(data.message || data.error);
+         } catch (error) {
+        console.error(error);
+        msgElem.innerText = "Network error";
+        msgElem.style.color = "red";
+    }
+});
 
-            loadVehicles();
-        } catch (error) {
-            console.error("Error updating route:", error);
-        }
-    });
+// Update route form
+document.getElementById("updateRouteForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const vehicle_number = document.getElementById("update_vehicle_number").value;
+    const new_route = document.getElementById("new_route").value;
+    try {
+        const res = await fetch("/api/vehicles/update-route", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ vehicle_number, new_route })
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+        loadVehicles();
+    } catch (error) {
+        console.error(error);
+    }
+});
 
-    // Initial load
-    loadVehicles();
+// Initial load
+loadVehicles();
 </script>
 
 {% endblock %}

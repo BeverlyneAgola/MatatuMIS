@@ -3,93 +3,258 @@
 {% block content %}
 
 <style>
-.home-container{
-    max-width:1100px;
-    margin:auto;
-    padding:40px 20px;
+
+body, html {
+  margin: 0;
+  height: 100%;
 }
 
-.home-header{
-    text-align:center;
-    margin-bottom:35px;
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  background: linear-gradient(135deg, #e63946, #1d3557, #0d1b2a);
+  background-attachment: fixed;
 }
 
-.home-header h1{
-    color:#2c3e50;
+.hero-section {
+  position: relative;
+  width: 100%;
+  height: 85vh;
+  overflow: hidden;
 }
 
-.home-intro{
-    background:#f8f9fa;
-    padding:20px;
-    border-radius:8px;
-    margin-bottom:30px;
+.hero-section::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(0,0,0,0.7),
+    rgba(0,0,0,0.3),
+    rgba(0,0,0,0.7)
+  );
+  top: 0;
+  left: 0;
 }
 
-.home-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:40px;
+.hero-content {
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  transform: translateY(-50%);
+  color: white;
+  z-index: 2;
+  max-width: 500px;
 }
 
-.home-card{
-    background:#ffffff;
-    padding:25px;
-    border-radius:10px;
-    box-shadow:0 3px 10px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
+.hero-content h1 {
+  font-size: 3rem;
+  margin-bottom: 15px;
 }
 
-.home-card:hover{
-    transform: translateY(-5px);
+/* TEXT */
+.hero-content p {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
 }
 
-.home-card h2{
-    margin-bottom:15px;
-    color:#1e88e5;
+/* BUTTON */
+.hero-btn {
+  display: inline-block;
+  padding: 12px 25px;
+  background: #0d1b2a;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
 }
 
-.home-card p{
-    margin:10px 0;
+.hero-btn:hover {
+  background: #e63946;
 }
 
-.home-card a{
-    text-decoration:none;
-    color:#1e88e5;
-    font-weight:bold;
+.slideshow {
+  position: absolute;
+  width: 100%;
+  height: 100vh; 
 }
 
-.home-cta{
-    text-align:center;
-    margin-top:40px;
+.slideshow::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4); /* darkens image */
+  top: 0;
+  left: 0;
 }
 
-.home-cta a{
-    display:inline-block;
-    margin:0 10px;
-    padding:12px 25px;
-    background:#1e88e5;
-    color:white;
-    border-radius:6px;
-    text-decoration:none;
-    font-weight:bold;
-    transition: background 0.2s;
+.slide {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-size: cover;       
+  background-position: center;   
+  background-repeat: no-repeat;
+  opacity: 0;
+  animation: fade 9s infinite;
 }
 
-.home-cta a:hover{
-    background:#1565c0;
+/* Each image delay */
+.slide:nth-child(1) { animation-delay: 0s; }
+.slide:nth-child(2) { animation-delay: 3s; }
+.slide:nth-child(3) { animation-delay: 6s; }
+
+@keyframes fade {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  30% { opacity: 1; }
+  40% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+.hero-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+  background: rgba(0, 0, 0, 0.5); /* glass */
+  padding: 30px;
+  border-radius: 10px;
+  
+  color: white;
+  text-align: center;
+  z-index: 2;
+}
+
+.content {
+  position: relative;
+  color: white;
+  text-align: center;
+  top: 40%;
+}
+.home-container {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+}
+
+.home-header {
+    text-align: center;
+    margin-bottom: 35px;
+    background: linear-gradient(to right, #e63946, #0d1b2a);
+    padding: 40px 20px;
+    border-radius: 10px;
+    color: white;
+}
+
+.home-header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.home-header p {
+    font-size: 1.2em;
+}
+
+.home-intro {
+    background: #edeff5;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border-left: 5px solid #e63946;
+    color: #333;
+}
+
+.home-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+}
+
+.home-card {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    border-top: 4px solid #e63946;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.home-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.home-card h2 {
+    margin-bottom: 15px;
+    color: #0d1b2a;
+}
+
+.home-card p {
+    margin: 10px 0;
+    color: #333;
+}
+
+.home-card a {
+    text-decoration: none;
+    color: #e63946;
+    font-weight: bold;
+    transition: color 0.2s ease;
+}
+
+.home-card a:hover {
+    color: #ff7f50;
+}
+
+.home-cta {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.home-cta a {
+    display: inline-block;
+    margin: 0 10px;
+    padding: 12px 25px;
+    background: #0d1b2a;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.home-cta a:hover {
+    background: #e63946;
+    transform: scale(1.05);
 }
 </style>
 
-<div class="home-container">
 
-    <div class="home-header">
-        <h1>Welcome to MatatuHub</h1>
-        <p>Your trusted platform for safe and efficient transport services.</p>
-    </div>
+<div class="hero-section">
+
+  <!-- Slideshow Background -->
+  <div class="slideshow">
+    <div class="slide" style="background-image: url('{{ url_for('static', filename='images/img1.jpeg') }}')"></div>
+    <div class="slide" style="background-image: url('{{ url_for('static', filename='images/img2.jpeg') }}')"></div>
+    <div class="slide" style="background-image: url('{{ url_for('static', filename='images/img3.webp') }}')"></div>
+  </div>
+
+  <!-- Overlay Content -->
+  <div class="hero-content">
+      <h1>Welcome to SuperMetro</h1>
+      <p>Your trusted platform for safe and efficient transport services.</p>
+  </div>
+
+</div>
+
 
     <div class="home-intro">
         <p>
-        At <strong>MatatuHub</strong>, we connect passengers with reliable transport operators.
+        At <strong>SuperMetro</strong>, we connect passengers with reliable transport operators.
         Explore our routes, check fares, and stay informed about transport updates.
         Your comfort and safety are our priority.
         </p>
@@ -97,7 +262,7 @@
 
     <div class="home-grid">
         <div class="home-card">
-            <h2>Our Routes and Fare Charges </h2>
+            <h2>Our Routes and Fare Charges</h2>
             <p>We provide access to a wide range of matatu routes, fare info, and real-time updates.</p>
             <a href="{{ url_for('main_bp.routes_fares') }}">View Routes & Fares →</a>
         </div>
@@ -109,11 +274,11 @@
         </div>
 
         <div class="home-card">
-            <h2>About US</h2>
+            <h2>About Us</h2>
             <p>Learn more about our company, mission, and values.</p>
             <a href="{{ url_for('main_bp.about_us') }}">Read More →</a>
         </div>
-
+    </div>
 
     <div class="home-cta">
         <a href="{{ url_for('auth_bp.login') }}">Sign In</a>
@@ -121,4 +286,4 @@
 
 </div>
 
-{% endblock %}#
+{% endblock %}

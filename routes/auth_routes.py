@@ -48,12 +48,12 @@ def login():
         email = request.form.get("email")
         password = request.form.get("password")
         
-        result ,status_code = login_system.login_user(email, password)  # Replace with your LOGIN logic
+        result ,status_code = login_system.login_user(email, password)  # Replace 
 
         if status_code == 200:
-            user = result["user"]  # now a dict
+            user = result["user"]  
             session["user"] = user
-            session["post"] = user.get("post", "").lower()  # decorator reads this
+            session["post"] = user.get("post", "").lower()  
             session["email"] = user.get("email")
             flash(result["message"], "success")
             return redirect(url_for("dashboard_bp.dashboard"))

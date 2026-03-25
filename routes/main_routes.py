@@ -18,7 +18,7 @@ def routes_fares():
     return render_template("main/routes_fare.html")
 
 # Contact Us
-@main_bp.route("/Contact_Us")
+@main_bp.route("/contact_us")
 def contact_us():
     submitted = request.args.get("submitted")  # to show confirmation message
     return render_template("main/Contact_Us.html", submitted=submitted)

@@ -1,14 +1,14 @@
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, OperationFailure
 import certifi
+from config import MONGO_URI
 
-connection_string = "mongodb+srv://agola:myfirstdatabase@trial.qwqpkuo.mongodb.net/?retryWrites=true&w=majority&appName=Trial"
 
 
 def get_db():
     try:
         client = MongoClient(
-            connection_string,
+            MONGO_URI,
             tlsCAFile=certifi.where()
         )
 

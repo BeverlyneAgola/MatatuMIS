@@ -1,0 +1,48 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<div class="card">
+    <h2>📅 View Schedules</h2>
+
+    <!-- FILTER DROPDOWN -->
+    <form method="GET">
+        <select name="route">
+            <option value="">-- All Routes --</option>
+            {% for r in routes %}
+                <option value="{{ r }}" {% if selected_route == r %}selected{% endif %}>
+                    {{ r }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Filter</button>
+    </form>
+
+    <br>
+
+    {% if schedules %}
+        <table border="1" cellpadding="10" style="margin:auto;">
+            <tr>
+                <th> Number Plate</th>
+                <th>Route</th>
+                <th>Schedule Time</th>
+            </tr>
+
+            {% for schedule in schedules %}
+            <tr>
+                <td>{{ schedule.vehicle_number }}</td>
+                <td>{{ schedule.route }}</td>
+                <td>{{ schedule.schedule_time }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No schedules found.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('routes_schedules.schedule_management') }}">⬅ Back</a>
+</div>
+
+{% endblock %}

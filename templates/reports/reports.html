@@ -99,10 +99,32 @@ th{
 tr:hover{
     background:#f5f5f5;
 }
+.alert{
+    padding:12px;
+    margin-bottom:15px;
+    border-radius:6px;
+    font-weight:500;
+}
+
+.alert.success{
+    background:#d4edda;
+    color:#155724;
+    border-left:5px solid #28a745;
+}
 </style>
 
 <div class="table-card">
 <h2>HR Reports</h2>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert {{ category }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 
 <!-- Tabs -->
 <div class="action-tabs">
@@ -150,7 +172,7 @@ tr:hover{
 {% elif action=='file' %}
     <!-- File New Report Form -->
     <div class="report-form">
-        <form action="/submit-report" method="POST">
+        <form action="{{ url_for('report_bp.submit_report') }}" method="POST">
             <div class="row">
                 <div>
                     <label>Name *</label>
@@ -181,6 +203,7 @@ tr:hover{
                 </div>
             </div>
             <button type="submit">Submit Report</button>
+            
         </form>
     </div>
 {% endif %}

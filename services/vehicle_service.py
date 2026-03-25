@@ -4,10 +4,17 @@ class VEHICLE_MANAGEMENT:
         self.collection = db['vehicles']
 
     def register_vehicle(self, vehicle_data: dict):
-        """Registers a new vehicle."""
         try:
-            self.collection.insert_one(vehicle_data)
-            return {"message": "Vehicle registration successful!", "vehicle": vehicle_data}, 201
+            result = self.collection.insert_one(vehicle_data)
+
+        # Convert ObjectId to string
+            vehicle_data["_id"] = str(result.inserted_id)
+
+            return {
+                "message": "Vehicle registration successful!",
+                "vehicle": vehicle_data
+            }, 201
+
         except Exception as e:
             return {"error": f"Error during vehicle registration: {str(e)}"}, 500
 
