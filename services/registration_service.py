@@ -1,3 +1,4 @@
+
 class REGISTRATION:
     def __init__(self, db):
         self.db = db
@@ -18,7 +19,9 @@ class REGISTRATION:
                 return {"error": "Invalid post selected."}, 400
 
             # Insert user
-            self.collection.insert_one(user_data)
+            insert_result = self.collection.insert_one(user_data)
+            user_data["_id"] = str(insert_result.inserted_id)
+            
             return {"message": "Registration successful!", "user": user_data}, 201
         except Exception as e:
             return {"error": f"Error during registration: {str(e)}"}, 500

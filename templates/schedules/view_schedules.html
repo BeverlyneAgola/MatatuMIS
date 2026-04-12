@@ -19,30 +19,59 @@
         <button type="submit">Filter</button>
     </form>
 
-    <br>
+    <br><hr><br>
 
-    {% if schedules %}
-        <table border="1" cellpadding="10" style="margin:auto;">
-            <tr>
-                <th> Number Plate</th>
-                <th>Route</th>
-                <th>Schedule Time</th>
-            </tr>
+    <!-- ===================== -->
+    <!-- SCHEDULE TABLE ONLY -->
+    <!-- ===================== -->
 
+    {% if schedules and schedules|length > 0 %}
+        <table border="1" cellpadding="10" style="margin:auto; width:95%; text-align:center;">
+            <thead>
+                <tr>
+                    <th>Vehicle</th>
+                    <th>Route</th>
+
+                    <th>Driver 1</th>
+                    <th>Conductor 1</th>
+
+                    <th>Driver 2</th>
+                    <th>Conductor 2</th>
+
+                    <th>Stages</th>
+                    <th>Schedule Time</th>
+                </tr>
+            </thead>
+
+            <tbody>
             {% for schedule in schedules %}
-            <tr>
-                <td>{{ schedule.vehicle_number }}</td>
-                <td>{{ schedule.route }}</td>
-                <td>{{ schedule.schedule_time }}</td>
-            </tr>
+                <tr>
+                    <td>{{ schedule.get('vehicle_number', 'N/A') }}</td>
+                    <td>{{ schedule.get('route', 'N/A') }}</td>
+
+                    <td>{{ schedule.get('driver1', 'N/A') }}</td>
+                    <td>{{ schedule.get('conductor1', 'N/A') }}</td>
+
+                    <td>{{ schedule.get('driver2', 'N/A') }}</td>
+                    <td>{{ schedule.get('conductor2', 'N/A') }}</td>
+
+                    <td>{{ schedule.get('stages', 'N/A') }}</td>
+                    <td>{{ schedule.get('schedule_time', 'N/A') }}</td>
+                </tr>
             {% endfor %}
+            </tbody>
         </table>
     {% else %}
-        <p>No schedules found.</p>
+        <p style="text-align:center; color:gray;">
+            No schedules found.
+        </p>
     {% endif %}
 
     <br>
-    <a href="{{ url_for('routes_schedules.schedule_management') }}">⬅ Back</a>
+
+    <div style="text-align:center;">
+        <a href="{{ url_for('routes_schedules.schedule_management') }}">⬅ Back</a>
+    </div>
 </div>
 
 {% endblock %}

@@ -4,39 +4,66 @@ class SCHEDULE_MANAGEMENT:
         self.collection = db['routes_schedules']
 
     def update_schedule(self, route_data):
-        """Updates or creates a route schedule with vehicle validation."""
         try:
             route = route_data.get("route")
             schedule_time = route_data.get("schedule_time")
-            vehicle_number = route_data.get("vehicle")  # From form dropdown
+            vehicle_number = route_data.get("vehicle")
 
-            # Validate vehicle exists and is assigned to the route
+            shift1 = route_data.get("shift1", {})
+            shift2 = route_data.get("shift2", {})
+            stages = route_data.get("stages", [])
+
+            # ---------------- VALIDATE VEHICLE ----------------
             vehicle_doc = self.db['vehicles'].find_one({
                 "vehicle_number": vehicle_number,
-                "route": route
             })
+
             if not vehicle_doc:
                 return {
-                    "error": f"Vehicle {vehicle_number} is not registered for route {route}"
+                    "error": f"Vehicle {vehicle_number} is not assigned to route {route}"
                 }, 400
 
-            # Update schedule
+            # ---------------- BUILD FULL DOCUMENT ----------------
+            schedule_doc = {
+                "route": route,
+                "vehicle_number": vehicle_number,
+                "schedule_time": schedule_time,
+
+                "driver1": shift1.get("driver"),
+                "conductor1": shift1.get("conductor"),
+
+                "driver2": shift2.get("driver"),
+                "conductor2": shift2.get("conductor"),
+
+                "stages": stages
+            }
+
+            # ---------------- SAVE (DO NOT OVERWRITE OLD ROUTES) ----------------
             self.collection.update_one(
-                {"route": route},
-                {"$set": {"schedule_time": schedule_time, "vehicle_number": vehicle_number}},
+                {
+                    "route": route,
+                    "vehicle_number": vehicle_number
+                },
+                {"$set": schedule_doc},
                 upsert=True
             )
-            return {"message": "Schedule updated successfully!", "route": route_data}, 200
+
+            return {
+                "message": "Schedule updated successfully!",
+                "data": schedule_doc
+            }, 200
 
         except Exception as e:
             return {"error": f"Error updating schedule: {str(e)}"}, 500
 
     def view_schedule(self):
-        """Retrieves all schedules."""
         try:
             schedules = list(self.collection.find())
-            for schedule in schedules:
-                schedule['_id'] = str(schedule['_id'])
+
+            for s in schedules:
+                s['_id'] = str(s['_id'])
+
             return {"schedules": schedules}, 200
+
         except Exception as e:
-            return {"error": f"Error viewing schedules: {str(e)}"}, 500
+            return {"error": str(e)}, 500

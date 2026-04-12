@@ -17,40 +17,41 @@ def mpesa_callback():
     stk_callback = data.get("Body", {}).get("stkCallback", {})
 
     result_code = stk_callback.get("ResultCode")
-    merchant_req_id = stk_callback.get("MerchantRequestID")
     checkout_req_id = stk_callback.get("CheckoutRequestID")
 
     if result_code == 0:
-        callback_metadata = stk_callback.get("CallbackMetadata", {}).get("Item", [])
+        metadata = stk_callback.get("CallbackMetadata", {}).get("Item", [])
 
-        transaction_update = {
+        update_data = {
             "ResultDesc": stk_callback.get("ResultDesc"),
+            "Status": "Completed",
             "ReceivedAt": datetime.datetime.now()
         }
 
-        for item in callback_metadata:
-            name = item.get("Name")
-            value = item.get("Value")
-            if name == "Amount":
-                transaction_update["Amount"] = value
-            elif name == "MpesaReceiptNumber":
-                transaction_update["TransactionID"] = value
-            elif name == "PhoneNumber":
-                transaction_update["PhoneNumber"] = value
-            elif name == "TransactionDate":
-                transaction_update["TransactionDate"] = value
+        for item in metadata:
+            if item["Name"] == "Amount":
+                update_data["Amount"] = item["Value"]
+            elif item["Name"] == "MpesaReceiptNumber":
+                update_data["TransactionID"] = item["Value"]
+            elif item["Name"] == "PhoneNumber":
+                update_data["PhoneNumber"] = item["Value"]
 
-        # Update the existing payment
-        update_result = payments_col.update_one(
-            {"CheckoutRequestID": checkout_req_id},  # match pending record
-            {"$set": transaction_update}
+        result = payments_col.update_one(
+            {"CheckoutRequestID": checkout_req_id},
+            {"$set": update_data}
         )
 
-        print(f"Matched {update_result.matched_count}, Modified {update_result.modified_count}")
+        print("Matched:", result.matched_count)
 
-        return jsonify({"ResultCode": 0, "ResultDesc": "Success"}), 200
+    else:
+        payments_col.update_one(
+            {"CheckoutRequestID": checkout_req_id},
+            {
+                "$set": {
+                    "Status": "Failed",
+                    "ResultDesc": stk_callback.get("ResultDesc")
+                }
+            }
+        )
 
-    return jsonify({
-        "ResultCode": result_code,
-        "ResultDesc": stk_callback.get("ResultDesc")
-    }), 200
+    return jsonify({"ResultCode": 0, "ResultDesc": "Processed"}), 200

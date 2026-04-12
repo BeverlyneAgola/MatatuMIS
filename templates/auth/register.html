@@ -71,23 +71,26 @@ document.getElementById("registerForm").addEventListener("submit", async functio
             body: JSON.stringify(data)
         });
 
-        let result;
-        try {
-            result = await response.json();
-        } catch (e) {
+         const contentType = response.headers.get("content-type");
+
+        if (contentType && contentType.includes("application/json")) {
+            const result = await response.json();
+
+            alert(result.message || result.error || "Unknown response");
+
+            if (response.ok) {
+                window.location.href = "{{ url_for('auth_bp.login') }}";
+            }
+
+        } else {
             const text = await response.text();
-            console.error("Non-JSON response from server:", text);
-            alert("Server returned HTML or error. Check console.");
-            return;
+            console.error("❌ Non-JSON response:", text);
+            alert("Server error — check console");
         }
 
-        alert(result.message || result.error || "Unknown response");
-
-        if (response.ok) {
-            window.location.href = "{{ url_for('auth_bp.login') }}";
-        }
     } catch (err) {
-        alert("Error connecting to server: " + err);
+        console.error("❌ FETCH ERROR:", err);
+        alert("Error connecting to server");
     }
 });
 </script>
