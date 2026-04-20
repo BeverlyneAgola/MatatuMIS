@@ -1,0 +1,87 @@
+{% extends "layout/base.html" %}
+{% block content %}
+
+<div class="container-fluid mt-4">
+
+    <div class="card shadow-sm p-4">
+
+        <div class="d-flex justify-content-between mb-4">
+            <h2>Income Records</h2>
+            
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table table-bordered table-hover">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>Vehicle</th>
+                        <th>Mpesa</th>
+                        <th>Cash</th>
+                        <th>Revenue</th>
+                        <th>Gross</th>
+                    </tr>
+                </thead>
+
+                <tbody id="incomeTable">
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            Loading records...
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+async function loadRecords(){
+    
+    const response = await fetch("/income/api/income");
+    const result = await response.json();
+
+    console.log(result);
+    const table = document.getElementById("incomeTable");
+
+    table.innerHTML = "";
+
+    const records = Array.isArray(result) ? result : (result.records || result.data || []);
+
+    if(records.length === 0){
+        table.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center">
+                    No records found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    records.forEach(record => {
+
+        table.innerHTML += `
+            <tr>
+                <td>${record.vehicle_number}</td>
+                <td>${record.mpesa_income || 0}</td>
+                <td>${record.cash_income || 0}</td>
+                <td>${record.revenue || 0}</td>
+                <td>${record.gross || 0}</td>
+            </tr>
+        `;
+    });
+}
+
+loadRecords();
+
+</script>
+
+{% endblock %}

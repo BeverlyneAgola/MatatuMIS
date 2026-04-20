@@ -1,0 +1,43 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2 class="mb-4">Payroll System</h2>
+
+    <div class="row">
+
+        <!-- VIEW PAYROLL -->
+        <div class="col-md-6">
+            <div class="card shadow p-4 text-center">
+
+                <h4>📊 View Payroll</h4>
+                <p>Check payroll records, filters, and export reports.</p>
+
+                <a href="/payroll/" class="btn btn-primary">
+                    View Payroll Records
+                </a>
+
+            </div>
+        </div>
+
+        <!-- COMPUTE PAYROLL -->
+        <div class="col-md-6">
+            <div class="card shadow p-4 text-center">
+
+                <h4>🧮 Compute Payroll</h4>
+                <p>Calculate and process employee salaries.</p>
+
+                <a href="/payroll/form" class="btn btn-success">
+                    Open Payroll Form
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

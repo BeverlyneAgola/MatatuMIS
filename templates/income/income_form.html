@@ -1,0 +1,139 @@
+{% extends "layout/base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+<div class="card p-4 shadow">
+
+<h2>Add Income Record</h2>
+
+<div class="mb-3">
+<label>Route</label>
+<select id="route" class="form-control" onchange="loadVehicles()">
+<option value="">Choose Route</option>
+<option value="Ngong">Ngong</option>
+<option value="Rongai">Rongai</option>
+<option value="Thika">Thika</option>
+</select>
+</div>
+
+<div class="mb-3">
+<label>Vehicle</label>
+<select id="vehicle" required>
+        <option value="">Select Vehicle</option>
+    </select>
+</div>
+
+<div class="mb-3">
+<label>Date</label>
+<input type="date" id="date" class="form-control">
+</div>
+
+<div class="mb-3">
+<label>Mpesa Income</label>
+<input type="text" id="mpesa" readonly class="form-control">
+</div>
+
+<div class="mb-3">
+<label>Cash Income</label>
+<input type="number" id="cash" class="form-control">
+</div>
+
+<button onclick="saveIncome()" class="btn btn-success">
+Save Record
+</button>
+
+</div>
+</div>
+
+<script>
+
+// =========================
+// LOAD VEHICLES
+// =========================
+document.getElementById("route").addEventListener("change", async function () {
+
+    const route = this.value;
+
+    console.log("Selected route:", route);
+
+    const vehicleSelect = document.getElementById("vehicle");
+    vehicleSelect.innerHTML = `<option value="">Select Vehicle</option>`;
+
+    if (!route) return;
+
+    const res = await fetch(`/income/api/vehicles?route=${route}`);
+    const data = await res.json();
+
+    console.log("Vehicles:", data);
+
+    data.forEach(v => {
+        vehicleSelect.innerHTML += `<option value="${v}">${v}</option>`;
+    });
+});
+
+
+// =========================
+// MPESA LOADER
+// =========================
+async function loadMpesa() {
+
+    const route = document.getElementById("route").value;
+    const vehicle = document.getElementById("vehicle").value;
+    const date = document.getElementById("date").value;
+
+    console.log("MPESA INPUTS:", { route, vehicle, date });
+
+    if (!route || !vehicle || !date) {
+        console.log("Waiting for complete inputs...");
+        return;
+    }
+
+    const url =`/income/api/mpesa?route=${encodeURIComponent(route)}&vehicle=${encodeURIComponent(vehicle)}&date=${date}`;
+
+    console.log("FETCHING:", url);
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    console.log("MPESA RESULT:", data);
+
+    document.getElementById("mpesa").value = data.mpesa_total || 0;
+}
+
+
+// =========================
+// EVENT TRIGGERS (FIXED POSITION)
+// =========================
+document.getElementById("vehicle").addEventListener("change", loadMpesa);
+document.getElementById("date").addEventListener("change", loadMpesa);
+
+
+
+async function saveIncome(){
+
+    const route = document.getElementById("route").value;
+    const vehicle = document.getElementById("vehicle").value;
+    const cash = Number(document.getElementById("cash").value || 0);
+
+    const res = await fetch("/income/api/income", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            route: route,
+            vehicle_number: vehicle,
+            cash_income: cash,
+            expenses: 0
+        })
+    });
+
+    const result = await res.json();
+
+    console.log(result);
+
+    alert(result.message || result.error || "Done");
+}
+
+
+</script>
+
+{% endblock %}  

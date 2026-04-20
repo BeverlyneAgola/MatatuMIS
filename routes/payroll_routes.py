@@ -6,6 +6,7 @@ from io import BytesIO
 from db.mongodb import get_db
 import re
 from services.decorator import post_required
+from services.payroll_service import PAYROLL_MANAGEMENT
 
 payroll_bp = Blueprint('payroll', __name__, url_prefix="/payroll")
 
@@ -13,9 +14,69 @@ payroll_bp = Blueprint('payroll', __name__, url_prefix="/payroll")
 @payroll_bp.route("/payroll")
 @post_required(["admin", "manager", "finance"])
 def payroll_page():
-    return render_template("payroll.html")
+    return render_template("payroll/payroll_dashboard.html")
+
+@payroll_bp.route("/dashboard")
+@post_required(["admin", "manager", "finance"])
+def payroll_dashboard():
+    return render_template("payroll/payroll_dashboard.html")
+
+
+@payroll_bp.route("/form")
+@post_required(["admin", "finance"])
+def payroll_form():
+    return render_template("payroll/payroll_form.html")
+
+
+@payroll_bp.route("/api/staff", methods=["GET"])
+@post_required(["admin", "finance"])
+def get_staff():
+
+    db = get_db()
+
+    position = request.args.get("position")
+    query = {}
+
+    if position:
+        query["post"] = {
+            "$regex": f"^{re.escape(position)}$",
+            "$options": "i"
+        }
+
+    staff = list(db["staff"].find(query))
+
+    service = PAYROLL_MANAGEMENT(db)
+
+    for person in staff:
+
+        person["_id"] = str(person["_id"])
+
+        role = person.get("post", "Driver").title()
+
+        person["role"] = role
+
+        person["name"] = person.get("name", "Unknown")
+
+        person["basic_salary"] = service.basic_salaries.get(role, 0)
+
+    return jsonify(staff)
+
+@payroll_bp.route("/api/calculate", methods=["POST"])
+@post_required(["admin", "finance"])
+def calculate_payroll():
+
+    db = get_db()
+
+    service = PAYROLL_MANAGEMENT(db)
+
+    data = request.get_json()
+
+    result, status = service.calculate_payroll(data)
+
+    return jsonify(result), status
 
 @payroll_bp.route("/", methods=["GET"])
+@post_required(["admin", "manager", "finance"])
 def payroll():
     db = get_db()  # connect to database
     payroll_data = list(db["payroll"].find())  # fetch records
@@ -32,6 +93,7 @@ def payroll():
 
 
 @payroll_bp.route("/api/payroll", methods=["GET"])
+@post_required(["admin", "manager", "finance"])
 def get_payroll():
 
     db = get_db()
@@ -65,6 +127,7 @@ def get_payroll():
 
 
 @payroll_bp.route("/export", methods=["GET"])
+@post_required(["admin", "manager", "finance"])
 def export_payroll_excel():
 
     db = get_db()

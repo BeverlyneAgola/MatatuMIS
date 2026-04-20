@@ -1,0 +1,191 @@
+<!-- templates/payroll/payroll_form.html -->
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="card shadow-sm p-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Payroll Entry</h2>
+
+            <a href="/payroll/" class="btn btn-primary">
+                View Payroll Records
+            </a>
+        </div>
+
+        <!-- FILTER -->
+        <div class="row mb-4">
+
+            <div class="col-md-4">
+                <label>Filter Position</label>
+                <select id="positionFilter" class="form-control">
+                    <option value="">All Staff</option>
+                    <option value="Driver">Driver</option>
+                    <option value="Conductor">Conductor</option>
+                    <option value="Manager">Manager</option>
+                    <option value="HR">HR</option>
+                    <option value="Finance">Finance</option>
+                    <option value="IT">IT</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button onclick="loadStaff()" class="btn btn-success w-100">
+                    Load Staff
+                </button>
+            </div>
+
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Basic Salary</th>
+                        <th>Allowances</th>
+                        <th>Deductions</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="staffTable">
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            Load staff to begin payroll entry
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    
+
+function showMessage(message, type) {
+
+    const box = document.createElement("div");
+
+    box.className = `alert alert-${type}`;
+    box.innerText = message;
+
+    document.querySelector(".card").prepend(box);
+
+    setTimeout(() => box.remove(), 3000);
+}
+
+    
+
+async function loadStaff(){
+
+    const position = document.getElementById("positionFilter").value;
+
+    let url = "/payroll/api/staff";
+
+    if(position){
+        url += "?position=" + position;
+    }
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    const table = document.getElementById("staffTable");
+    table.innerHTML = "";
+
+    if(data.length === 0){
+        table.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center">No staff found</td>
+            </tr>
+        `;
+        return;
+    }
+
+    data.forEach(staff => {
+
+        table.innerHTML += `
+            <tr>
+                <td>${staff.name}</td>
+                <td>${staff.role}</td>
+                <td>${staff.basic_salary}</td>
+
+                <td>
+                    <input type="number" id="allow_${staff._id}" class="form-control" value="0">
+                </td>
+
+                <td>
+                    <input type="number" id="deduct_${staff._id}" class="form-control" value="0">
+                </td>
+
+                <td>
+                    <button class="btn btn-primary btn-sm"
+                        onclick="savePayroll(this, '${staff.name}', '${staff.role}', '${staff._id}')">
+                        Save
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+
+async function savePayroll(button,name, position, id){
+
+    const allowances = document.getElementById("allow_" + id).value;
+    const deductions = document.getElementById("deduct_" + id).value;
+
+    console.log("SAVE CLICKED:", button, name, position, id);
+    showMessage("Processing payroll...", "info");
+    button.disabled = true;
+    button.innerText = "Saving...";
+
+    try {
+    const response = await fetch("/payroll/api/calculate", {
+
+        method: "POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body: JSON.stringify({
+            employee_name: name,
+            position: position,
+            allowances: Number(allowances),
+            deductions: Number(deductions)
+        })
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+            showMessage(result.message || "Payroll saved successfully", "success");
+        } else {
+            showMessage(result.error || "Failed to save payroll", "danger");
+        }
+
+    } catch (error) {
+        showMessage("Server error while saving payroll", "danger");
+    }
+
+    button.disabled = false;
+    button.innerText = "Save";
+}
+
+loadStaff();
+
+</script>
+
+{% endblock %}

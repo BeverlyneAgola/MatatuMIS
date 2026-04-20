@@ -1,28 +1,114 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from services.income_service import IncomeExpenseTracker
 from db.mongodb import get_db
-
-db = get_db()
-income_bp = Blueprint('income_bp', __name__)
-
-income_expense_tracker = IncomeExpenseTracker(db) if db is not None else None
+from datetime import datetime, timedelta
 
 
+income_bp = Blueprint('income_bp', __name__, url_prefix="/income")
+
+@income_bp.route("/")
+def income():    
+    return render_template("income/income.html")
 
 
-@income_bp.route('/api/income', methods=['POST'])
+@income_bp.route("/form")
+def income_form():
+    return render_template("income/income_form.html")
+
+
+@income_bp.route("/records")
+def income_records_page():
+    return render_template("income/income_list.html")
+
+
+@income_bp.route("/api/income", methods=["POST"])
 def add_income_record_api():
-    if not request.json or income_expense_tracker is None:
-        return jsonify({"error": "Invalid request or database not connected"}), 400
-    response, status_code = income_expense_tracker.add_record(request.json)
-    return jsonify(response), status_code
+
+    db = get_db()
+    tracker = IncomeExpenseTracker(db)
+
+    response, status = tracker.add_record(request.get_json())
+
+    return jsonify(response), status
 
 
-@income_bp.route('/api/income', methods=['GET'])
+@income_bp.route("/api/income", methods=["GET"])
 def get_income_records_api():
-    if income_expense_tracker is None:
-        return jsonify({"error": "Database not connected"}), 500
-    response, status_code = income_expense_tracker.view_records()
-    return jsonify(response), status_code
+
+    db = get_db()
+    tracker = IncomeExpenseTracker(db)
+
+    response, status = tracker.view_records()
+
+    return jsonify(response), status
+
+@income_bp.route("/api/vehicles", methods=["GET"])
+def vehicles():
+    db = get_db()
+
+    route = request.args.get("route")
+
+    if not route:
+        return jsonify([]), 200
+
+    route = route.strip()
+
+    cursor = db["vehicles"].find(
+        {"assigned_route": route},
+        {"_id": 0, "vehicle_number": 1}
+    )
+
+    return jsonify([v["vehicle_number"] for v in cursor]), 200
 
 
+@income_bp.route("/api/mpesa", methods=["GET"])
+def mpesa():
+    db = get_db()
+
+    route = request.args.get("route")
+    vehicle = request.args.get("vehicle")
+    date_str = request.args.get("date")  
+    
+    print(route, vehicle, date_str)
+    
+    if not route or not vehicle or not date_str:
+        return jsonify({
+            "error": "Missing route, vehicle, or date"
+        }), 400
+
+    try:
+        start = datetime.strptime(date_str, "%Y-%m-%d")
+        end = start + timedelta(days=1)
+    except Exception as e:
+        return jsonify({"error": "Invalid date format"}), 400
+                            
+    payments = db["payments"].find({
+        "Route": route,
+        "Vehicle": vehicle,
+        "ReceivedAt": {
+            "$gte": start,
+            "$lt": end
+        }
+    })
+
+    transactions = []
+    total = 0
+
+    for p in payments:
+        amount = float(p.get("Amount", 0))
+        total += amount
+
+        transactions.append({
+            "phone": p.get("PhoneNumber"),
+            "date": p.get("ReceivedAt"),
+            "status": p.get("ResultDesc"),
+            "checkout_id": p.get("CheckoutRequestID")
+        })
+
+    return jsonify({
+        "vehicle": vehicle,
+        "route": route,
+        "date": date_str,
+        "mpesa_total": total,
+        "transactions": transactions
+    })

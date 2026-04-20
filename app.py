@@ -34,6 +34,7 @@ app.register_blueprint(routes_schedules_bp)
 
 
 
+
 @app.route('/')
 def dashboard():
     return render_template("dashboard/dashboard.html")
