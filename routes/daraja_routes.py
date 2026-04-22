@@ -17,6 +17,7 @@ payments_col = db["payments"]
 
 
 @daraja_bp.route("/payments", methods=["GET"])
+@post_required(["admin", "conductor", "driver"])
 def stk_page():
     return render_template("payments/stk_payment.html")
 
@@ -26,6 +27,7 @@ def payments_page():
     return render_template("payments/stk_payment.html")
 
 @daraja_bp.route("/api/stkpush", methods=["POST"])
+@post_required(["admin", "conductor", "driver"])
 def stk_push():
     data = request.json
     amount = data.get("amount")
@@ -67,6 +69,7 @@ def stk_push():
         return jsonify({"error": str(e)}), 500
     
 @daraja_bp.route("/callback", methods=["POST"])
+@post_required(["admin", "conductor", "driver"])
 def callback():
     data = request.json
     stk_callback = data.get("Body", {}).get("stkCallback", {})
@@ -102,6 +105,7 @@ def callback():
     return jsonify({"ResultCode": result_code, "ResultDesc": stk_callback.get("ResultDesc")}), 200
 
 @dashboard_bp.route("/api/recent-payments", methods=["GET"])
+@post_required(["admin", "conductor", "driver", "finance"])
 def recent_payments():
     db = get_db()
     payments = list(db["payments"].find().sort("ReceivedAt", -1).limit(10))

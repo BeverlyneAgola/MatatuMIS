@@ -12,24 +12,24 @@ payroll_bp = Blueprint('payroll', __name__, url_prefix="/payroll")
 
 
 @payroll_bp.route("/payroll")
-@post_required(["admin", "manager", "finance"])
+@post_required(["admin", "Finance"])
 def payroll_page():
     return render_template("payroll/payroll_dashboard.html")
 
 @payroll_bp.route("/dashboard")
-@post_required(["admin", "manager", "finance"])
+@post_required(["admin", "Finance"])
 def payroll_dashboard():
     return render_template("payroll/payroll_dashboard.html")
 
 
 @payroll_bp.route("/form")
-@post_required(["admin", "finance"])
+@post_required(["admin", "Finance"])
 def payroll_form():
     return render_template("payroll/payroll_form.html")
 
 
 @payroll_bp.route("/api/staff", methods=["GET"])
-@post_required(["admin", "finance"])
+@post_required(["admin", "Finance"])
 def get_staff():
 
     db = get_db()
@@ -62,7 +62,7 @@ def get_staff():
     return jsonify(staff)
 
 @payroll_bp.route("/api/calculate", methods=["POST"])
-@post_required(["admin", "finance"])
+@post_required(["admin", "Finance"])
 def calculate_payroll():
 
     db = get_db()
@@ -76,7 +76,7 @@ def calculate_payroll():
     return jsonify(result), status
 
 @payroll_bp.route("/", methods=["GET"])
-@post_required(["admin", "manager", "finance"])
+@post_required(["admin", "Finance"])
 def payroll():
     db = get_db()  # connect to database
     payroll_data = list(db["payroll"].find())  # fetch records
@@ -93,7 +93,7 @@ def payroll():
 
 
 @payroll_bp.route("/api/payroll", methods=["GET"])
-@post_required(["admin", "manager", "finance"])
+@post_required(["admin", "Finance"])
 def get_payroll():
 
     db = get_db()
@@ -127,7 +127,7 @@ def get_payroll():
 
 
 @payroll_bp.route("/export", methods=["GET"])
-@post_required(["admin", "manager", "finance"])
+@post_required(["admin","Finance"])
 def export_payroll_excel():
 
     db = get_db()

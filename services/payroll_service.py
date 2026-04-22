@@ -10,9 +10,9 @@ class PAYROLL_MANAGEMENT:
             "Driver": 30000,
             "Conductor": 20000,
             "Manager": 80000,
-            "HR": 50000,
+            "Hr": 50000,
             "Finance": 60000,
-            "IT": 70000
+            "It": 70000
         }
 
         self.tax_rate = 0.15

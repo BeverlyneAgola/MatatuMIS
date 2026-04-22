@@ -2,52 +2,38 @@
 
 {% block content %}
 
-<!DOCTYPE html>
+<style>
+    .schedule-card {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        width: 400px;
+        margin: 50px auto;
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
 
-<head>
-    <meta charset="UTF-8">
-    <title>Schedule Management</title>
-    <style>
-        body {
-            font-family: Arial;
-            text-align: center;
-            padding: 50px;
-            background: #f4f6f9;
-        }
+    .schedule-card a {
+        display: block;
+        margin: 15px 0;
+        padding: 12px;
+        background: #0d1b2a;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+    }
 
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            display: inline-block;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
+    .schedule-card a:hover {
+        background: #e63946;
+    }
+</style>
 
-        a {
-            display: block;
-            margin: 15px 0;
-            padding: 12px;
-            background: #0d1b2a;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-        }
-
-        a:hover {
-            background: #e63946;
-        }
-    </style>
-</head>
-
-
-<div class="card">
+<div class="schedule-card">
     <h1>Schedule Management</h1>
     <p>What would you like to do?</p>
 
     <a href="{{ url_for('routes_schedules.view_schedules_page') }}">📅 View Schedules</a>
     <a href="{{ url_for('routes_schedules.update_schedule_page') }}">✏️ Update Schedule</a>
 </div>
-
->
 
 {% endblock %}

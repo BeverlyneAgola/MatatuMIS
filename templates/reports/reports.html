@@ -114,7 +114,7 @@ tr:hover{
 </style>
 
 <div class="table-card">
-<h2>HR Reports</h2>
+<h2>Reports</h2>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
@@ -128,8 +128,19 @@ tr:hover{
 
 <!-- Tabs -->
 <div class="action-tabs">
-    <a href="{{ url_for('report_bp.reports', action='view') }}" class="{% if action=='view' %}active{% endif %}">View Reports</a>
-    <a href="{{ url_for('report_bp.reports', action='file') }}" class="{% if action=='file' %}active{% endif %}">File New Report</a>
+
+    {% if user_post != 'finance' %}
+    <a href="{{ url_for('report_bp.reports', action='view') }}"
+       class="{% if action=='view' %}active{% endif %}">
+       View Reports
+    </a>
+    {% endif %}
+
+    <a href="{{ url_for('report_bp.reports', action='file') }}"
+       class="{% if action=='file' %}active{% endif %}">
+       File New Report
+    </a>
+
 </div>
 
 {% if action=='view' %}

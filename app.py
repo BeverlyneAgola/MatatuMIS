@@ -14,9 +14,10 @@ from routes.main_routes import main_bp
 from routes.dashboard_routes import dashboard_bp
 from routes.schedule_management_routes import routes_schedules_bp
 from flask import render_template
+from rbac import can_access
 
 app = Flask(__name__)
-
+app.jinja_env.globals.update(can_access=can_access)
 app.secret_key = SECRET_KEY
 
 

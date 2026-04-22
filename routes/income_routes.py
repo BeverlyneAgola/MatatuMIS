@@ -1,10 +1,17 @@
 from flask import Blueprint, request, jsonify, render_template
+from services.decorator import post_required
 from services.income_service import IncomeExpenseTracker
 from db.mongodb import get_db
 from datetime import datetime, timedelta
 
 
+ROLE_PERMISSIONS = {
+    "view": ["admin", "Finance", "Manager"],
+    "write": ["admin", "Finance"],
+}
+
 income_bp = Blueprint('income_bp', __name__, url_prefix="/income")
+
 
 @income_bp.route("/")
 def income():    
@@ -22,6 +29,7 @@ def income_records_page():
 
 
 @income_bp.route("/api/income", methods=["POST"])
+@post_required(ROLE_PERMISSIONS["write"])
 def add_income_record_api():
 
     db = get_db()
@@ -33,6 +41,7 @@ def add_income_record_api():
 
 
 @income_bp.route("/api/income", methods=["GET"])
+@post_required(ROLE_PERMISSIONS["view"])
 def get_income_records_api():
 
     db = get_db()
@@ -42,7 +51,9 @@ def get_income_records_api():
 
     return jsonify(response), status
 
+
 @income_bp.route("/api/vehicles", methods=["GET"])
+@post_required(ROLE_PERMISSIONS["view"])
 def vehicles():
     db = get_db()
 
@@ -62,26 +73,23 @@ def vehicles():
 
 
 @income_bp.route("/api/mpesa", methods=["GET"])
+@post_required(ROLE_PERMISSIONS["view"])
 def mpesa():
     db = get_db()
 
     route = request.args.get("route")
     vehicle = request.args.get("vehicle")
-    date_str = request.args.get("date")  
-    
-    print(route, vehicle, date_str)
-    
+    date_str = request.args.get("date")
+
     if not route or not vehicle or not date_str:
-        return jsonify({
-            "error": "Missing route, vehicle, or date"
-        }), 400
+        return jsonify({"error": "Missing route, vehicle, or date"}), 400
 
     try:
         start = datetime.strptime(date_str, "%Y-%m-%d")
         end = start + timedelta(days=1)
-    except Exception as e:
+    except Exception:
         return jsonify({"error": "Invalid date format"}), 400
-                            
+
     payments = db["payments"].find({
         "Route": route,
         "Vehicle": vehicle,

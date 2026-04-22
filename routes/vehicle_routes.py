@@ -11,11 +11,12 @@ vehicle_management_system = VEHICLE_MANAGEMENT(db) if db is not None else None
 
 
 @vehicle_bp.route("/vehicles")
-@post_required(["admin", "manager"])
+@post_required(["Admin", "manager"])
 def vehicles():
     return render_template("vehicles/vehicles_list.html")
 
 @vehicle_bp.route('/api/vehicles', methods=['POST'])
+@post_required(["Admin", "Manager"])
 def register_vehicle_api():
     if not request.json or vehicle_management_system is None:
         return jsonify({"error": "Invalid request or database not connected"}), 400
@@ -23,6 +24,7 @@ def register_vehicle_api():
     return jsonify(response), status_code
 
 @vehicle_bp.route('/api/vehicles', methods=['GET'])
+@post_required(["Admin", "Manager"])
 def get_vehicles_api():
     if vehicle_management_system is None:
         return jsonify({"error": "Database not connected"}), 500
@@ -31,6 +33,7 @@ def get_vehicles_api():
 
 
 @vehicle_bp.route('/api/vehicles/<vehicle_number>', methods=['DELETE'])
+@post_required(["Admin", "Manager"])
 def delete_vehicle_api(vehicle_number):
     if vehicle_management_system is None:
         return jsonify({"error": "Database not connected"}), 500
@@ -39,6 +42,7 @@ def delete_vehicle_api(vehicle_number):
 
 
 @vehicle_bp.route('/api/vehicles/update-route', methods=['POST'])
+@post_required(["Admin", "Manager"])
 def update_vehicle_route_api():
     if not request.json or vehicle_management_system is None:
         return jsonify({"error": "Invalid request or database not connected"}), 400

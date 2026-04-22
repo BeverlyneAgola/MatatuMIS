@@ -51,9 +51,10 @@ def login():
         result ,status_code = login_system.login_user(email, password)  # Replace 
 
         if status_code == 200:
+            session.clear()
             user = result["user"]  
             session["user"] = user
-            session["post"] = user.get("post", "").lower()  
+            session["post"] = user.get("post", "").strip().lower()  
             session["email"] = user.get("email")
             flash(result["message"], "success")
             return redirect(url_for("dashboard_bp.dashboard"))

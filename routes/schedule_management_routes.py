@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template
 from db.mongodb import get_db
+from services.decorator import post_required
 from services.schedule_management_service import SCHEDULE_MANAGEMENT
 
 
@@ -8,11 +9,13 @@ routes_schedules_bp = Blueprint('routes_schedules', __name__, url_prefix="/sched
 
 
 @routes_schedules_bp.route("/")
+@post_required(["admin", "hr" ,"HR" ,"manager"])
 def schedule_management():
     return render_template("Schedule_management.html")
 
 
 @routes_schedules_bp.route("/api/update_schedule", methods=["POST"])
+@post_required(["admin", "hr" ,"HR" ,"manager"])
 def update_schedule():
     db = get_db()
 
@@ -28,6 +31,7 @@ def update_schedule():
 
 
 @routes_schedules_bp.route("/update")
+@post_required(["admin", "hr" ,"HR" ,"manager"])
 def update_schedule_page():
     print("🔥 UPDATE ROUTE HIT 🔥")
     db = get_db()
@@ -65,6 +69,7 @@ def update_schedule_page():
     
     
 @routes_schedules_bp.route("/view")
+@post_required(["admin", "hr" ,"HR" ,"manager" , "driver", "conductor"])
 def view_schedules_page():
     db = get_db()
 
