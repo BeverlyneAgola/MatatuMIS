@@ -4,32 +4,30 @@ from services.income_service import IncomeExpenseTracker
 from db.mongodb import get_db
 from datetime import datetime, timedelta
 
-
-ROLE_PERMISSIONS = {
-    "view": ["admin", "Finance", "Manager"],
-    "write": ["admin", "Finance"],
-}
-
 income_bp = Blueprint('income_bp', __name__, url_prefix="/income")
 
 
+
 @income_bp.route("/")
+@post_required(["admin", "Finance"])
 def income():    
     return render_template("income/income.html")
 
 
 @income_bp.route("/form")
+@post_required(["admin", "Finance"])
 def income_form():
     return render_template("income/income_form.html")
 
 
 @income_bp.route("/records")
+@post_required(["admin", "Finance"])
 def income_records_page():
     return render_template("income/income_list.html")
 
 
 @income_bp.route("/api/income", methods=["POST"])
-@post_required(ROLE_PERMISSIONS["write"])
+@post_required(["admin", "Finance"])
 def add_income_record_api():
 
     db = get_db()
@@ -41,7 +39,7 @@ def add_income_record_api():
 
 
 @income_bp.route("/api/income", methods=["GET"])
-@post_required(ROLE_PERMISSIONS["view"])
+@post_required(["admin", "Finance", "Manager"])
 def get_income_records_api():
 
     db = get_db()
@@ -53,7 +51,7 @@ def get_income_records_api():
 
 
 @income_bp.route("/api/vehicles", methods=["GET"])
-@post_required(ROLE_PERMISSIONS["view"])
+@post_required(["admin", "Finance", "Manager"])
 def vehicles():
     db = get_db()
 
@@ -71,10 +69,10 @@ def vehicles():
 
     return jsonify([v["vehicle_number"] for v in cursor]), 200
 
-
 @income_bp.route("/api/mpesa", methods=["GET"])
-@post_required(ROLE_PERMISSIONS["view"])
+@post_required(["admin", "Finance", "Manager"])
 def mpesa():
+
     db = get_db()
 
     route = request.args.get("route")

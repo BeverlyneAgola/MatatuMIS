@@ -9,7 +9,7 @@ routes_schedules_bp = Blueprint('routes_schedules', __name__, url_prefix="/sched
 
 
 @routes_schedules_bp.route("/")
-@post_required(["admin", "hr" ,"HR" ,"manager"])
+@post_required(["admin", "hr" ,"HR" ,"manager" , "Driver", "Conductor"])
 def schedule_management():
     return render_template("Schedule_management.html")
 
@@ -69,7 +69,7 @@ def update_schedule_page():
     
     
 @routes_schedules_bp.route("/view")
-@post_required(["admin", "hr" ,"HR" ,"manager" , "driver", "conductor"])
+@post_required(["admin", "hr" ,"HR" ,"manager" , "Driver", "Conductor"])
 def view_schedules_page():
     db = get_db()
 
