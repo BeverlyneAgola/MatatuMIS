@@ -2,14 +2,15 @@ import requests
 import base64
 from requests.auth import HTTPBasicAuth
 from datetime import datetime
+from config import KEY, SECRET, O_URL, S_URL, code, PASSKEY
 
 class DarajaService:
-    consumer_key = 'RiAQBIsjvkTl6uXI5owaCAmXzNMMjzyyNYCHWVCAROIRAnXJ'
-    consumer_secret = 'Uxzw1OpAqXHhNinbUuUDW7Tl8K8GA9mKWMIn9LTxnEAAje753DW09qjEefznCLqH'
-    oauth_url = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
-    stk_url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
-    shortcode = '174379'
-    passkey = 'bfb279f9aa9bdbcf158e97dd8e6bca9b5dcb6c7f5d2b0fdbf9c4a6e7d8f9e6f'
+    consumer_key = 'KEY'
+    consumer_secret = 'SECRET'
+    oauth_url = 'O_URL'
+    stk_url = 'S_URL'
+    shortcode = 'code'
+    passkey = 'PASSKEY'
 
     def get_access_token(self):
         """Generates OAuth token"""
