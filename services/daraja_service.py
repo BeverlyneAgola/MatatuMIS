@@ -2,15 +2,15 @@ import requests
 import base64
 from requests.auth import HTTPBasicAuth
 from datetime import datetime
-from config import KEY, SECRET, O_URL, S_URL, code, PASSKEY
+from config import CALLBACK, KEY, SECRET, O_URL, S_URL, code, PASSKEY, PASSWORD
 
 class DarajaService:
-    consumer_key = 'KEY'
-    consumer_secret = 'SECRET'
-    oauth_url = 'O_URL'
-    stk_url = 'S_URL'
-    shortcode = 'code'
-    passkey = 'PASSKEY'
+    consumer_key = KEY
+    consumer_secret = SECRET
+    oauth_url = O_URL
+    stk_url = S_URL
+    shortcode = code
+    passkey = PASSKEY
 
     def get_access_token(self):
         """Generates OAuth token"""
@@ -45,14 +45,14 @@ class DarajaService:
        
         payload = {
             "BusinessShortCode": self.shortcode,
-            "Password": "MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMjYwMzA3MjE1NTQ5",
+            "Password": PASSWORD,
             "Timestamp": "20260307215549",
             "TransactionType": "CustomerPayBillOnline",
             "Amount": int(float(amount)),
             "PartyA": phone_number,
             "PartyB": self.shortcode,
             "PhoneNumber": phone_number,
-            "CallBackURL": "https://036e-105-161-107-141.ngrok-free.app/callback",
+            "CallBackURL": CALLBACK,
             "AccountReference": account_reference,
             "TransactionDesc": transaction_desc
         }
